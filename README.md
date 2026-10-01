@@ -21,12 +21,10 @@ It contains the data-generating mechanisms, the SKATER–FLR estimation procedur
 |---|---|
 | `simulation_core.py` | Core functions for data generation, FPCA, within transformation, geographic kNN adjacency, MST construction, recursive pruning, BIC selection, coefficient estimation, evaluation, and bootstrap inference. |
 | `run_estimation.py` | Runs the Monte Carlo estimation experiment. |
+| `run_example.py` | Produces representative simulation figures. |
 | `run_sensitivity.py` | Runs the FVE, kNN, and minimum-group-size sensitivity experiments. |
 | `run_joint_test.py` | Runs the joint beta/gamma homogeneity size and power experiment. |
-| `run_example.py` | Produces representative simulation figures. |
 | `run_empirical.py` | Runs the county-level corn-yield empirical application. |
-| `run_all.py` | Unified `smoke` and `full` entry point. |
-| `validate_implementation.py` | Deterministic implementation and data-shape checks. |
 | `dataset/` | Real-data inputs used in the empirical application. |
 
 ## Software requirements
@@ -37,19 +35,15 @@ Install the required Python packages with
 pip install -r requirements.txt
 ```
 
-A quick implementation check can be run with
+Run the individual parts of the replication with
 
 ```bash
-python run_all.py smoke
+python run_estimation.py
+python run_example.py
+python run_sensitivity.py
+python run_joint_test.py
+python run_empirical.py
 ```
-
-The full replication can be started with
-
-```bash
-python run_all.py full --jobs 8
-```
-
-Generated tables and figures are written to `results/`, which is not included in the repository.
 
 ## Real data
 
