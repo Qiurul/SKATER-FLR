@@ -1,57 +1,65 @@
 # Simulation code for SKATER–FLR
 
-This repository provides the code and real-data inputs used for the manuscript
+This repository reproduces the simulation study and empirical application in the manuscript
 *SKATER–FLR: Functional Linear Regression with Spatially Contiguous Coefficient Groups*.
-
-It contains the simulation data-generating mechanisms, the SKATER–FLR estimation procedure, sensitivity experiments, the joint homogeneity test, and the empirical application.
+It contains the data-generating mechanisms, the SKATER–FLR estimation procedure, sensitivity experiments, the joint homogeneity test, and the real-data inputs used in the paper.
 
 ## Simulation design
 
-- `n = 200`, `T = 50`, functional grid size `R = 100`.
-- Fourier basis dimension `L = 10`; scalar controls `p = 3`.
-- Four spatial groups are used in the estimation study.
+- `n = 200`, `T = 50`, functional grid size `R = 100`, Fourier dimension `L = 10`, and `p = 3` scalar covariates.
+- The true number of spatial groups in the estimation experiment is `K0 = 4`.
 - The default FPCA threshold is `FVE = 0.95`.
-- The geographic adjacency matrix `A` is constructed from spatial coordinates using a symmetrized `k = 5` nearest-neighbour graph.
+- Spatial adjacency is constructed from coordinates using a symmetrized geographic `k = 5` nearest-neighbour graph.
 - The minimum admissible group size is `n_min = 10`.
-- Monte Carlo estimation and sensitivity experiments use 100 replications.
+- Uniform and non-uniform spatial designs use group probabilities `(0.25, 0.25, 0.25, 0.25)` and `(0.35, 0.275, 0.225, 0.15)`, respectively.
+- Estimation and sensitivity results are based on 100 Monte Carlo replications.
 - The joint size/power experiment uses `c in {1.0, 1.1, 1.2, 1.3}`, 200 Monte Carlo replications, and 1000 bootstrap replications.
 
 ## Repository files
 
 | File / folder | Purpose |
 |---|---|
-| `run_all.py` | Unified smoke/full entry point. |
-| `simulation/simulation_core.py` | Data generation, FPCA, spatial kNN graph, MST construction, recursive pruning, BIC selection, estimation metrics, and bootstrap test. |
-| `simulation/run_estimation.py` | Estimation Monte Carlo experiment. |
-| `simulation/run_sensitivity.py` | FVE, kNN and minimum-group-size sensitivity experiments. |
-| `simulation/run_joint_test.py` | Joint beta/gamma homogeneity size and power experiment. |
-| `simulation/run_example.py` | Representative simulation figures. |
-| `empirical/run_empirical.py` | Real-data SKATER–FLR analysis. |
-| `empirical/data/` | Real-data inputs, including response/covariates, daily temperature curves, spatial coordinates and pairwise distances. |
-| `validate_implementation.py` | Fast deterministic implementation checks. |
+| `simulation_core.py` | Core functions for data generation, FPCA, within transformation, geographic kNN adjacency, MST construction, recursive pruning, BIC selection, coefficient estimation, evaluation, and bootstrap inference. |
+| `run_estimation.py` | Runs the Monte Carlo estimation experiment. |
+| `run_sensitivity.py` | Runs the FVE, kNN, and minimum-group-size sensitivity experiments. |
+| `run_joint_test.py` | Runs the joint beta/gamma homogeneity size and power experiment. |
+| `run_example.py` | Produces representative simulation figures. |
+| `run_empirical.py` | Runs the county-level corn-yield empirical application. |
+| `run_all.py` | Unified `smoke` and `full` entry point. |
+| `validate_implementation.py` | Deterministic implementation and data-shape checks. |
+| `dataset/` | Real-data inputs used in the empirical application. |
 
 ## Software requirements
 
-Install the Python dependencies with
+Install the required Python packages with
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Real data
-
-The empirical application uses 202 counties observed from 1999 to 2008.
-
-- **Y**: annual county corn yield, stored in `empirical/data/corn_panel.csv`.
-- **X**: centered 365-day daily mean-temperature trajectory, stored in `empirical/data/temperature_curves.csv`.
-- **Z**: standardized annual mean daily precipitation, stored in `empirical/data/corn_panel.csv`.
-- **Spatial coordinates**: longitude and latitude for the 202 county nodes, stored in `empirical/data/county_nodes.csv`.
-- **Distance matrix**: pairwise geographic distances, stored in `empirical/data/distance_matrix.csv`.
-
-The adjacency matrix `A` used by SKATER–FLR is not an externally supplied fixed matrix: it is generated from the county spatial coordinates by the geographic k-nearest-neighbour rule used in the analysis. The coordinate file is therefore included explicitly in the repository.
-
-Run the empirical analysis with
+A quick implementation check can be run with
 
 ```bash
-python -m empirical.run_empirical
+python run_all.py smoke
 ```
+
+The full replication can be started with
+
+```bash
+python run_all.py full --jobs 8
+```
+
+Generated tables and figures are written to `results/`, which is not included in the repository.
+
+## Real data
+
+The empirical application uses a balanced panel of 202 counties observed from 1999 to 2008.
+
+- **Y**: annual county corn yield in `dataset/corn_panel.csv` (`Yield`).
+- **X**: centered 365-day daily mean-temperature trajectories in `dataset/temperature_curves.csv` (`day_001` to `day_365`).
+- **Z**: standardized annual mean daily precipitation in `dataset/corn_panel.csv` (`avgPRCP_std`).
+- **Spatial coordinates**: county longitude and latitude in `dataset/county_nodes.csv`.
+- **Distance matrix**: pairwise geographic distances in `dataset/distance_matrix.csv`.
+- `dataset/source_regdat_1999_2008_balanced202.csv` retains the compact annual panel used to construct the empirical inputs.
+
+The spatial adjacency matrix `A` is generated from the county coordinates using the geographic k-nearest-neighbour rule. Thus, `county_nodes.csv` is the source spatial input for constructing `A`; the distance matrix is retained for reproducibility and checking.

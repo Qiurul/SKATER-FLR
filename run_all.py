@@ -21,11 +21,11 @@ def main():
     if args.mode == "smoke":
         run(["validate_implementation.py"])
         return
-    run(["-m", "simulation.run_example"])
-    run(["-m", "simulation.run_estimation", "--reps", "100", "--jobs", str(args.jobs)])
-    run(["-m", "simulation.run_sensitivity", "--reps", "100", "--jobs", str(args.jobs)])
-    run(["-m", "simulation.run_joint_test", "--reps", "200", "--B", "1000", "--jobs", str(args.jobs)])
-    run(["-m", "empirical.run_empirical"])
+    run(["run_example.py"])
+    run(["run_estimation.py", "--reps", "100", "--jobs", str(args.jobs)])
+    run(["run_sensitivity.py", "--reps", "100", "--jobs", str(args.jobs)])
+    run(["run_joint_test.py", "--reps", "200", "--B", "1000", "--jobs", str(args.jobs)])
+    run(["run_empirical.py"])
 
 if __name__ == "__main__":
     main()

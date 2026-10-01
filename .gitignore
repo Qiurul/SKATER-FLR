@@ -2,6 +2,5 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 .DS_Store
-outputs/*
-!outputs/README.md
 .venv/
+results/

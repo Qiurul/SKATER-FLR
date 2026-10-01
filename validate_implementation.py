@@ -1,7 +1,7 @@
 """Fast deterministic checks for the cleaned GitHub package."""
 from pathlib import Path
 import numpy as np
-from simulation.simulation_core import (
+from simulation_core import (
     simulate_estimation_dgp, simulate_test_dgp, run_skater_path,
     joint_homogeneity_test, load_empirical_csvs,
 )
@@ -18,7 +18,7 @@ test = joint_homogeneity_test(h0, B=2, random_state=99, fve_threshold=.90,
                               k_neighbors=4, min_size=8, K_max=3)
 assert test["B_valid"] + test["B_failed"] == 2
 
-D = ROOT / "empirical" / "data"
+D = ROOT / "dataset"
 emp = load_empirical_csvs(D/"corn_panel.csv", D/"temperature_curves.csv",
                           D/"county_nodes.csv", D/"distance_matrix.csv")
 assert emp["Y_mat"].shape == (202, 10)
