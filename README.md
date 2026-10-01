@@ -1,90 +1,57 @@
-# SKATER–FLR reproducibility code
+# Simulation code for SKATER–FLR
 
-Code and data for **“SKATER–FLR: Functional Linear Regression with Spatially Contiguous Coefficient Groups.”**
+This repository provides the code and real-data inputs used for the manuscript
+*SKATER–FLR: Functional Linear Regression with Spatially Contiguous Coefficient Groups*.
 
-The repository separates the simulation study from the unchanged empirical application. The cleaned simulation scripts under `simulation/` are the recommended replication entry points.
-
-## Repository structure
-
-```text
-SKATER-FLR/
-├── README.md
-├── requirements.txt
-├── run_all.py
-├── validate_implementation.py
-├── simulation/
-│   ├── simulation_core.py
-│   ├── run_estimation.py
-│   ├── run_sensitivity.py
-│   ├── run_joint_test.py
-│   └── run_example.py
-├── empirical/
-│   ├── run_empirical.py
-│   └── data/
-│       ├── README.md
-│       ├── corn_panel.csv
-│       ├── temperature_curves.csv
-│       ├── county_nodes.csv
-│       ├── distance_matrix.csv
-│       └── source_regdat_1999_2008_balanced202.csv
-└── outputs/
-```
+It contains the simulation data-generating mechanisms, the SKATER–FLR estimation procedure, sensitivity experiments, the joint homogeneity test, and the empirical application.
 
 ## Simulation design
 
-The estimation simulation uses `n=200`, `T=50`, a functional grid of `R=100`, Fourier dimension `L=10`, `p=3` scalar covariates, and `K0=4` spatial groups. The default estimator uses FPCA FVE `0.95`, a symmetrized geographic `k=5` nearest-neighbour graph, and minimum group size `n_min=10`.
+- `n = 200`, `T = 50`, functional grid size `R = 100`.
+- Fourier basis dimension `L = 10`; scalar controls `p = 3`.
+- Four spatial groups are used in the estimation study.
+- The default FPCA threshold is `FVE = 0.95`.
+- The geographic adjacency matrix `A` is constructed from spatial coordinates using a symmetrized `k = 5` nearest-neighbour graph.
+- The minimum admissible group size is `n_min = 10`.
+- Monte Carlo estimation and sensitivity experiments use 100 replications.
+- The joint size/power experiment uses `c in {1.0, 1.1, 1.2, 1.3}`, 200 Monte Carlo replications, and 1000 bootstrap replications.
 
-The simulated objects are generated directly in code, so no fixed simulation input CSV is required:
+## Repository files
 
-- `Y_it`: simulated scalar response, shape `(n,T)`;
-- `X_it(s)`: simulated functional predictor, shape `(n,T,R)`;
-- `Z_it`: simulated three-dimensional scalar covariates, shape `(n,T,3)`;
-- coordinates: simulated spatial locations, shape `(n,2)`.
+| File / folder | Purpose |
+|---|---|
+| `run_all.py` | Unified smoke/full entry point. |
+| `simulation/simulation_core.py` | Data generation, FPCA, spatial kNN graph, MST construction, recursive pruning, BIC selection, estimation metrics, and bootstrap test. |
+| `simulation/run_estimation.py` | Estimation Monte Carlo experiment. |
+| `simulation/run_sensitivity.py` | FVE, kNN and minimum-group-size sensitivity experiments. |
+| `simulation/run_joint_test.py` | Joint beta/gamma homogeneity size and power experiment. |
+| `simulation/run_example.py` | Representative simulation figures. |
+| `empirical/run_empirical.py` | Real-data SKATER–FLR analysis. |
+| `empirical/data/` | Real-data inputs, including response/covariates, daily temperature curves, spatial coordinates and pairwise distances. |
+| `validate_implementation.py` | Fast deterministic implementation checks. |
 
-The sensitivity grids are FVE `{0.80, 0.85, 0.90, 0.95}`, kNN `{4,5,6,7,8}`, and minimum group size `{5,10,15,20,25}`.
+## Software requirements
 
-The joint size/power experiment uses `c={1.0,1.1,1.2,1.3}`, `N_MC=200`, and `B=1000`. Under the two-group alternative, both coefficient types vary: `beta_2=c beta_1` and `gamma_2=c gamma_1`.
-
-## Real-data Y, X and Z
-
-The empirical application is kept unchanged. It uses 202 counties over 1999–2008.
-
-| Symbol | Repository representation | Meaning |
-|---|---|---|
-| **Y** | `empirical/data/corn_panel.csv` → `Yield` | Annual county corn yield. |
-| **X** | `empirical/data/temperature_curves.csv` → `day_001` … `day_365` | Centered daily mean-temperature trajectory. |
-| **Z** | `empirical/data/corn_panel.csv` → `avgPRCP_std` | Standardized annual mean daily precipitation. |
-
-See `empirical/data/README.md` for the row alignment and file definitions.
-
-## Installation
+Install the Python dependencies with
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Reproduce the simulation study
+## Real data
 
-```bash
-python -m simulation.run_estimation --reps 100 --jobs 8
-python -m simulation.run_sensitivity --reps 100 --jobs 8
-python -m simulation.run_joint_test --reps 200 --B 1000 --jobs 50
-python -m simulation.run_example
-```
+The empirical application uses 202 counties observed from 1999 to 2008.
 
-## Reproduce the empirical application
+- **Y**: annual county corn yield, stored in `empirical/data/corn_panel.csv`.
+- **X**: centered 365-day daily mean-temperature trajectory, stored in `empirical/data/temperature_curves.csv`.
+- **Z**: standardized annual mean daily precipitation, stored in `empirical/data/corn_panel.csv`.
+- **Spatial coordinates**: longitude and latitude for the 202 county nodes, stored in `empirical/data/county_nodes.csv`.
+- **Distance matrix**: pairwise geographic distances, stored in `empirical/data/distance_matrix.csv`.
+
+The adjacency matrix `A` used by SKATER–FLR is not an externally supplied fixed matrix: it is generated from the county spatial coordinates by the geographic k-nearest-neighbour rule used in the analysis. The coordinate file is therefore included explicitly in the repository.
+
+Run the empirical analysis with
 
 ```bash
 python -m empirical.run_empirical
-python -m empirical.run_empirical --bootstrap 1000
 ```
-
-## Quick validation
-
-```bash
-python validate_implementation.py
-```
-
-The full joint-test simulation is computationally expensive because each bootstrap replicate repeats FPCA, graph/MST construction, recursive pruning, BIC selection, and refitting.
